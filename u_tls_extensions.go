@@ -304,6 +304,25 @@ func (e *SCTExtension) Read(b []byte) (int, error) {
 	return e.Len(), io.EOF
 }
 
+type PreSharedKeyExtension struct{}
+
+func (e *PreSharedKeyExtension) writeToUConn(uc *UConn) error {
+	return nil
+}
+
+func (e *PreSharedKeyExtension) Len() int {
+	return 4
+}
+
+func (e *PreSharedKeyExtension) Read(b []byte) (int, error) {
+	if len(b) < e.Len() {
+		return 0, io.ErrShortBuffer
+	}
+	b[0] = byte(extensionPreSharedKey >> 8)
+	b[1] = byte(extensionPreSharedKey)
+	return e.Len(), io.EOF
+}
+
 type SessionTicketExtension struct {
 	Session *ClientSessionState
 }
