@@ -290,7 +290,7 @@ func (e *SCTExtension) writeToUConn(uc *UConn) error {
 }
 
 func (e *SCTExtension) Len() int {
-	return 4
+	return 6
 }
 
 func (e *SCTExtension) Read(b []byte) (int, error) {
@@ -311,15 +311,37 @@ func (e *PreSharedKeyExtension) writeToUConn(uc *UConn) error {
 }
 
 func (e *PreSharedKeyExtension) Len() int {
-	return 4
+	return 24
 }
 
 func (e *PreSharedKeyExtension) Read(b []byte) (int, error) {
 	if len(b) < e.Len() {
 		return 0, io.ErrShortBuffer
 	}
+
+	extBodyLen := e.Len() - 4
+
 	b[0] = byte(extensionPreSharedKey >> 8)
 	b[1] = byte(extensionPreSharedKey)
+	b[2] = byte(extBodyLen >> 8)
+	b[3] = byte(extBodyLen)
+
+	// identity.length = 4 = b[4...8]
+	b[4] = byte(0)
+	b[5] = byte(0)
+	b[6] = byte(0)
+	b[7] = byte(4)
+	// identity.body = b[8...12]
+
+	// obfuscated_ticket_age = b[12...16]
+
+	// PskBinderEntry.length = 4 = b[16...20]
+	b[16] = byte(0)
+	b[17] = byte(0)
+	b[18] = byte(0)
+	b[19] = byte(4)
+	// PskBinderEntry.body = b[20...24]
+
 	return e.Len(), io.EOF
 }
 
